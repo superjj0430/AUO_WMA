@@ -1,0 +1,30 @@
+{"SQC_IN" : {
+	"chip_x" : 20,
+	"chip_y" : 10,
+	"file_path_in" : "./data/0_SQC_IN/",
+	"wafer_area" : 1,
+	"wafer_id" : "COT#R#LON20210920131313",
+	"version" : 0,
+	"file_path_used" : "./data/1_USE_QC/",
+	"file_path_judge" : "./data/2_QC_JUDGE/2_QC_JUDGE_JUDGE/",
+	"file_path_orgin" : "./data/2_QC_JUDGE/2_QC_JUDGE_ORGIN/",
+	"file_path_qcout" : "./data/3_QC_OUT/",
+	"file_path_area_judge" : "./data/4_PROCESS_AREA/4_AREA_JUDGE/",
+	"file_path_area_orgin" : "./data/4_PROCESS_AREA/4_AREA_ORGIN/",
+	"file_path_pair" : "./data/5_PROCESS_PAIR/"},
+ "QC_JUDGE" : {
+	"ins_01": {"item_name": "ins_01", "min_set": 4, "max_set": 9},
+	"ins_02": {"item_name": "ins_02", "min_set": 2500, "max_set": 4600},
+	"ins_03": {"item_name": "ins_03", "min_set": 0, "max_set": 0},
+	"ins_04": {"item_name": "ins_04", "min_set": 8, "max_set": 11},
+	"ins_05": {"item_name": "ins_05", "min_set": 3600, "max_set": 4600},
+	"ins_06": {"item_name": "ins_06", "min_set": 3000, "max_set": 5500},
+	"ins_07": {"item_name": "ins_07", "min_set": 4400, "max_set": 4630}},
+ "AREA_JUDGE" : {
+	"pixel_repeat_x" : 4,
+	"pixel_repeat_y" : 2,
+	"area_repeat_x" : 4,
+	"area_repeat_y" : 4,
+	"less_ng_cnt": 1}
+}
+
