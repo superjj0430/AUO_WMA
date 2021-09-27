@@ -1,0 +1,43 @@
+WMA Phase1資料夾結構設計
+│  
+├─0_SQC_HISTORY
+│
+│
+│      
+├─0_SQC_IN (狗，監控是否有新資料進入)
+│
+│
+│
+├─1_USE_HISTORY
+│
+│
+│      
+├─1_USE_QC (狗，監控是否有新的USED MAP FROM機台進入)
+│
+│
+│
+├─2_QC_JUDGE
+│  │
+│  ├─2_QC_JUDGE_HISTORY
+│  │      
+│  ├─2_QC_JUDGE_JUDGE
+│  │      
+│  └─2_QC_JUDGE_ORGIN
+│
+│
+│          
+├─3_QC_OUT
+│
+│
+│      
+├─4_PROCESS_AREA
+│  │
+│  ├─4_AREA_HISTORY
+│  │
+│  ├─4_AREA_JUDGE
+│  │
+│  └─4_AREA_ORGIN
+│
+│
+│          
+└─5_PROCESS_PAIR
