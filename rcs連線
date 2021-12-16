@@ -1,2 +1,12 @@
 進入https://iconnect.auo.com/rcsvpn/下載安裝RCS VPN程式(Pulse Secure) 
 連線OA個人電腦：點選 https://rcsgw.auo.com/auorcs.rdp -> 開啟 -> 輸入電腦名稱 -> 連線
+
+
+
+pulse secure
+
+
+server: https://rcs.auo.com
+
+使用者名稱: barryshih
+密碼:雙因子
