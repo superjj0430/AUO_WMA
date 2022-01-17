@@ -1,0 +1,143 @@
+# input: wafer_id & trx_sn
+@api_view(['POST'])
+def status_check(request):
+    # handel json decode error
+    try:
+        request_data = json.loads(request.body)
+        # print(request_data)
+    except json.decoder.JSONDecodeError as e:
+        py_dict = {'error_msg': str(e)}
+        json_dict = json.dumps(py_dict)
+        return Response(json_dict, status=status.HTTP_400_BAD_REQUEST)
+    
+    # status list for proccess control
+    status_list = pd.read_csv(r'./Data_Archived/wafer_status_list.csv')
+    # Output format
+    with open('./TRX_Format/TxMaterialAnalyzeReq-O.json') as f:
+        output_format = json.load(f)
+    
+    
+    # build trx_sn list for each request
+    qc_list = []
+    trx_sn = request_data["trx"]["trx_sn"]
+    log_id = request_data["trx"]["log_id"]
+    lm_time = request_data["trx"]["lm_time"]
+    in_path = './upload_temp/'
+    
+    for material_info in  request_data["trx"]["material_infos"]["material_info"]:
+        qc_dic = {}
+        qc_dic["trx_sn"] = trx_sn
+        qc_dic["log_id"] = log_id
+        qc_dic["lm_time"] = lm_time
+        qc_dic["wafer_id"] = material_info["wafer_id"]
+        qc_dic["model_no"] = material_info["model_no"]
+        qc_dic["status"] = ""
+        qc_dic["error_msg"] = ""
+        qc_list.append(qc_dic)
+    
+
+    # check file exist
+    for i in qc_list:
+        for (root, dirs, files) in os.walk(in_path):
+            print(len([string for string in files if i["wafer_id"] in string]))
+            if len([string for string in files if i["wafer_id"] in string]) == 0:
+                i['status'] = 'ERROR'  
+                i['error_msg'] = 'no such file'
+    print(qc_list)
+    
+    #check part A & part B
+    # code here
+    
+    # 若TRX_SN已存在
+    if trx_sn in status_list.values:
+        print("exist")
+        # 檢查資料庫的 WAFER_ID 與傳入是否相符
+        current_trx_sn = status_list[status_list['trx_sn'].str.contains(trx_sn)]
+        id_list_db = list(current_trx_sn['wafer_id'])
+        id_list_request = []
+        for i in qc_list:
+            id_list_request.append(i['wafer_id'])
+        if set(id_list_db) != set(id_list_request):
+            return Response("TRX_SN與WAFER ID不符合", status=status.HTTP_400_BAD_REQUEST)
+
+        # 檢查資料庫的 WAFER 狀態
+        output_format["trx"]["log_id"] = log_id
+        output_format["trx"]["trx_sn"] = trx_sn
+        output_format["trx"]["lm_time"] = lm_time
+        tmp_list = []
+        for row in current_trx_sn.itertuples(index=False):
+            tmp = {}
+            
+            # 當狀態為 COMPLETE , 回傳 meterial_info
+            if row.status == "COMPLETE":
+                tmp["wafer_id"] = row.wafer_id
+                tmp["status"] = row.status
+                tmp["spec_id"] = "COMPLETE_TESTING"
+                tmp["map_id"] = "COMPLETE_TESTING"
+                tmp["map_path"] = row.ox_file_path
+                tmp["judge_user"] = "COMPLETE_TESTING"
+                tmp["judge_time"] = "COMPLETE_TESTING"
+                tmp["judge_comment"] = "COMPLETE_TESTING"
+            
+            # 當狀態為 PROCESSING, 報錯 (回報資料庫記錄的 TRX_SN, LM_TIME)    
+            if row.status == "PROCESSING":
+                tmp["wafer_id"] = row.wafer_id
+                tmp["status"] = row.status
+                tmp["link"] = "WAIT_TESTING"
+                
+            # 當狀態為 ERROR, (回報資料庫記錄的 ERROR MESSAGE -> rtn_code, rtn_msg)
+            # RETRY?
+            if row.status == "ERROR":
+                tmp["wafer_id"] = row.wafer_id
+                tmp["status"] = row.status
+                tmp["error_msg"] = "ERROR_TESTING"
+            tmp_list.append(tmp)
+            output_format["trx"]["material_infos"]["material_info"] = tmp_list
+        return Response(output_format)
+
+    # 若TRX_SN不存在
+    if trx_sn not in status_list.values:
+        print("not exist")
+        for i in qc_list:
+            tmp = {}
+            # 若無檔案或part a&b錯誤則跳過
+            if i['status'] == 'ERROR' and (i['error_msg'] == 'no such file' or i['error_msg'] == 'part a&b error'):
+                pass
+            
+            # 檢查資料庫是否有存在與傳入相符的 WAFER_I
+            # 若 WAFER_ID 存在
+            if not status_list[status_list['wafer_id'].str.contains(i['wafer_id'])].empty:
+                print('new trx_sn & wafer exist')
+                tmp_df = status_list[status_list['wafer_id'].str.contains(i['wafer_id'])]
+                tmp_df['lm_time'] = tmp_df['lm_time'].apply(lambda x: datetime.strptime(x, "%Y-%m-%d %H:%M:%S.%f"))
+                
+                # 最新版status為complete
+                if tmp_df[tmp_df['lm_time'] == max(tmp_df['lm_time'])]['status'].values[0] == 'COMPLETE':
+                    i['status'] = 'PROCESSING'
+                    print("執行新一次的judging")
+                
+                # 最新版status為processing or error
+                if tmp_df[tmp_df['lm_time'] == max(tmp_df['lm_time'])]['status'].values[0] == 'PROCESSING':
+                    i['status'] = 'ERROR'  
+                    i['error_msg'] = 'last one still processing' + tmp_df[tmp_df['lm_time'] == max(tmp_df['lm_time'])]['trx_sn'].values[0]
+
+                if tmp_df[tmp_df['lm_time'] == max(tmp_df['lm_time'])]['status'].values[0] == 'ERROR':
+                    i['status'] = 'ERROR'  
+                    i['error_msg'] = 'last one error' + tmp_df[tmp_df['lm_time'] == max(tmp_df['lm_time'])]['error_msg'].values[0]
+                
+            
+            # 若 WAFER_ID 不存在
+            if status_list[status_list['wafer_id'].str.contains(i['wafer_id'])].empty:
+                print(i['wafer_id'], "empty")
+                i['status'] = 'PROCESSING'
+                
+                
+        tmp_df = pd.DataFrame(qc_list)
+        tmp_df.lm_time.apply(str)
+        tmp_df.to_csv('./Data_Archived/wafer_status_list.csv', mode = 'a', index=False, header=False)
+                
+        # 組成json format回傳
+        # response後執行judging (trx_sn, wafer_id, _model_no) status == PROCESSING only
+    
+
+    return Response(True)
