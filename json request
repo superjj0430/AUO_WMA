@@ -333,3 +333,23 @@ x = {
   ]
  }
 }
+
+
+
+# part 1
+# x['TargetCoc2Map'][list(x['TargetCoc2Map'].keys())[0]]
+process_wafer_dict = {}
+for i in list(x['TargetCoc2Map'][list(x['TargetCoc2Map'].keys())[0]].keys()):
+    print(x['TargetCoc2Map'][list(x['TargetCoc2Map'].keys())[0]][i]['WaferId'])
+    print(x['TargetCoc2Map'][list(x['TargetCoc2Map'].keys())[0]][i]['EqpType'])
+    process_wafer_dict[x['TargetCoc2Map'][list(x['TargetCoc2Map'].keys())[0]][i]['WaferId']] = x['TargetCoc2Map'][list(x['TargetCoc2Map'].keys())[0]][i]['EqpType']
+    
+
+
+# part 2
+led_type_list = ['R', 'G', 'B']
+for i in led_type_list:
+    for j in x['ComplementWaferMap'][i]:
+        print(j['WaferId'])
+        print(j['EqpType'])
+        process_wafer_dict[j['WaferId']] = j['EqpType']
