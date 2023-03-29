@@ -1,0 +1,335 @@
+false = False
+true = True
+null = None
+x = {
+ "// this json file base on QC Coordinate System": -1,
+ "//MachineOriPointOnQc uses led as the base unit and the coordinate system is QC file coordinate system.": -1,
+ "LayoutConfig": {
+  "Zone_coordinates_can_be_negative": false,
+  "Zone_coordinates_can_over_NaN": false,
+  "solver_max_time": 10
+ },
+ "MixConfig": {
+  "solver_max_time": 10,
+  "can_group_yourself": false
+ },
+ "LayoutInfo": {
+  "ModelId": "T161FUN01.0",
+  "product_inch": 16.1,
+  "ModelInfo": {
+   "PanelInfo": {
+    "Panel_Pixel_X": 240,
+    "Panel_Pixel_Y": 540,
+    "Panel_Pitch_X": 692,
+    "Panel_Pitch_Y": 692,
+    "LED_Size_X": 20,
+    "LED_Size_Y": 40,
+    "Panel2COC2_X": 2,
+    "Panel2COC2_Y": 4
+   },
+   "R": {
+    "QC_Dimension_X": 4856,
+    "QC_Dimension_Y": 2832,
+    "QC_Front_Side": "Upper",
+    "QC_Flat_Side": "Bottom",
+    "EQ_Dimension_X": 50,
+    "EQ_Dimension_Y": 30,
+    "EQ_Front_Side": "Down",
+    "EQ_Flat_Side": "Right",
+    "QC2EQ_Alignment_01": {
+     "QC_X": 979,
+     "QC_Y": 566,
+     "EQ_X": 270,
+     "EQ_Y": 183
+    },
+    "QC2EQ_Alignment_02": {
+     "QC_X": 3878,
+     "QC_Y": 2267,
+     "EQ_X": 1971,
+     "EQ_Y": 3082
+    }
+   },
+   "G": {
+    "QC_Dimension_X": 4856,
+    "QC_Dimension_Y": 2832,
+    "QC_Front_Side": "Upper",
+    "QC_Flat_Side": "Bottom",
+    "EQ_Dimension_X": 50,
+    "EQ_Dimension_Y": 30,
+    "EQ_Front_Side": "Down",
+    "EQ_Flat_Side": "Left",
+    "QC2EQ_Alignment_01": {
+     "QC_X": 979,
+     "QC_Y": 566,
+     "EQ_X": 1971,
+     "EQ_Y": 3082
+    },
+    "QC2EQ_Alignment_02": {
+     "QC_X": 3878,
+     "QC_Y": 2267,
+     "EQ_X": 270,
+     "EQ_Y": 183
+    }
+   },
+   "B": {
+    "QC_Dimension_X": 4856,
+    "QC_Dimension_Y": 2832,
+    "QC_Front_Side": "Upper",
+    "QC_Flat_Side": "Bottom",
+    "EQ_Dimension_X": 50,
+    "EQ_Dimension_Y": 30,
+    "EQ_Front_Side": "Down",
+    "EQ_Flat_Side": "Left",
+    "QC2EQ_Alignment_01": {
+     "QC_X": 979,
+     "QC_Y": 566,
+     "EQ_X": 1971,
+     "EQ_Y": 3082
+    },
+    "QC2EQ_Alignment_02": {
+     "QC_X": 3878,
+     "QC_Y": 2267,
+     "EQ_X": 270,
+     "EQ_Y": 183
+    }
+   }
+  },
+  "EqpType": "ELT",
+  "AreaNum": 6,
+  "MixNum": 2,
+  "Coc2Size": [
+   120,
+   135
+  ],
+  "TargetPitchSize": [
+   692,
+   692
+  ],
+  "UseRepairWafer": true,
+  "DefaultAreaSizeByPixel": [
+   40,
+   68
+  ],
+  "MainAreaList": {
+   "A": {
+    "LocationPoint": [
+     120,
+     34
+    ],
+    "Size": null
+   },
+   "B": {
+    "LocationPoint": [
+     80,
+     0
+    ],
+    "Size": null
+   },
+   "C": {
+    "LocationPoint": [
+     40,
+     0
+    ],
+    "Size": null
+   },
+   "D": {
+    "LocationPoint": [
+     0,
+     34
+    ],
+    "Size": null
+   },
+   "E": {
+    "LocationPoint": [
+     40,
+     68
+    ],
+    "Size": null
+   },
+   "F": {
+    "LocationPoint": [
+     80,
+     68
+    ],
+    "Size": null
+   }
+  },
+  "RepairAreaList": {
+   "ALL": {
+    "LocationPoint": [
+     0,
+     0
+    ],
+    "Size": [
+     135,
+     120
+    ],
+    "Zone": {
+     "3-9": {
+      "LocationPoint": [
+       0,
+       0
+      ],
+      "Size": [
+       135,
+       120
+      ]
+     }
+    }
+   }
+  },
+  "Mix": [
+   [
+    "C",
+    "F"
+   ],
+   [
+    "B",
+    "E"
+   ],
+   [
+    "A",
+    "D"
+   ],
+   [
+    "F",
+    "C"
+   ],
+   [
+    "E",
+    "B"
+   ],
+   [
+    "D",
+    "A"
+   ]
+  ]
+ },
+ "EqpInfo": {
+  "SLT": {
+   "MaskSize": [
+    34,
+    20
+   ],
+   "MaskStep": [
+    2,
+    1
+   ],
+   "R_MachineOriPointOnQc": [
+    809,
+    575
+   ],
+   "G_MachineOriPointOnQc": [
+    807,
+    577
+   ],
+   "B_MachineOriPointOnQc": [
+    807,
+    577
+   ],
+   "SourcePitchSize": [
+    24,
+    14
+   ]
+  },
+  "ELT": {
+   "MaskSize": [
+    40,
+    68
+   ],
+   "MaskStep": [
+    1,
+    2
+   ],
+   "R_MachineOriPointOnQc": [
+    297,
+    797
+   ],
+   "G_MachineOriPointOnQc": [
+    295,
+    795
+   ],
+   "B_MachineOriPointOnQc": [
+    295,
+    795
+   ],
+   "SourcePitchSize": [
+    14,
+    24
+   ]
+  }
+ },
+ "TargetCoc2Map": {
+  "UJ2800435": {
+   "R": {
+    "WaferId": "UJ2800435",
+    "MachineOriPointOnQc": [
+     297,
+     797
+    ],
+    "Inch": 16.1,
+    "EqpType": "ELT",
+    "DataSetDir": "D:\\TF_rawData/ELT/UJ2800435/"
+   },
+   "G": {
+    "WaferId": "UJ2800283",
+    "MachineOriPointOnQc": [
+     295,
+     795
+    ],
+    "Inch": 16.1,
+    "EqpType": "ELT",
+    "DataSetDir": "D:\\TF_rawData/ELT/UJ2800283/"
+   },
+   "B": {
+    "WaferId": "UJ2800459",
+    "MachineOriPointOnQc": [
+     295,
+     795
+    ],
+    "Inch": 16.1,
+    "EqpType": "ELT",
+    "DataSetDir": "D:\\TF_rawData/ELT/UJ2800459/"
+   }
+  }
+ },
+ "ComplementWaferMap": {
+  "YieldThreshold": 20,
+  "R": [
+   {
+    "WaferId": "UJ2800768",
+    "MachineOriPointOnQc": [
+     809,
+     575
+    ],
+    "Inch": 16.1,
+    "EqpType": "SLT",
+    "DataSetDir": "D:\\TF_rawData/SLT/UJ2800768/"
+   }
+  ],
+  "G": [
+   {
+    "WaferId": "UJ2800553",
+    "MachineOriPointOnQc": [
+     807,
+     577
+    ],
+    "Inch": 16.1,
+    "EqpType": "SLT",
+    "DataSetDir": "D:\\TF_rawData/SLT/UJ2800553/"
+   }
+  ],
+  "B": [
+   {
+    "WaferId": "UJ2800756",
+    "MachineOriPointOnQc": [
+     807,
+     577
+    ],
+    "Inch": 16.1,
+    "EqpType": "SLT",
+    "DataSetDir": "D:\\TF_rawData/SLT/UJ2800756/"
+   }
+  ]
+ }
+}
