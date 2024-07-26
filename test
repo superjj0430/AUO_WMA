@@ -1,0 +1,171 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import os
+
+
+
+
+def scan_regions(big_matrix , small_cols, small_rows, marked_regions, threshold):
+    start_x, start_y = 0, 0
+    big_rows, big_cols = big_matrix.shape
+    last_marked_regions_cnt = len(marked_regions)
+    total_elements = small_cols*small_rows
+    cnt = 0
+
+    while start_y+small_rows <= big_rows:
+        # 往右
+        while start_x+small_cols <= big_cols:
+            tmp_matrix = big_matrix[start_y:start_y+small_rows, start_x:start_x+small_cols]
+
+            # 無法移轉區
+            if np.any(tmp_matrix == -2):
+                start_x+=1
+                continue
+            
+            else:
+                
+                count_negative_one = np.sum(tmp_matrix == -1)
+                # defect過多
+                if (count_negative_one / total_elements)>threshold:
+                    start_x+=1
+                    continue
+                
+                # 可用
+                else:
+                    marked_regions.append([start_x, start_y])
+                    start_x+=small_cols
+                    cnt+=1
+                    # mark_regions_plt(big_matrix, small_rows, small_cols, marked_regions, '{}_{}'.format(start_x, start_y))
+                    
+        
+        start_x = 0
+        # 往下
+        if len(marked_regions) == last_marked_regions_cnt:
+            start_y+=1
+            
+        else:
+            start_y+=small_rows
+            last_marked_regions_cnt = len(marked_regions)
+    print(cnt)
+    mark_regions_plt(big_matrix, small_rows, small_cols, marked_regions, '{}'.format('final'))
+    return marked_regions
+
+
+
+
+def mark_regions_plt(big_matrix, small_rows, small_cols, marked_regions, title):
+    fig, ax = plt.subplots()
+    ax.imshow(big_matrix, cmap='gray_r', vmin=0, vmax=1)
+
+    if len(marked_regions)>0:
+        for i in marked_regions:
+            x, y = i[0], i[1]
+            rect = patches.Rectangle((y, x), small_cols, small_rows, linewidth=2, edgecolor='red', facecolor='none')
+            ax.add_patch(rect)
+    
+
+        
+    plt.title(title)
+    # plt.show()
+    save_path = r"D:\\vscode\\python_code\\\UPL_PL\\UJ4300621UPL_0.1_85\\"
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+        print(f"Created directory: {save_path}")
+    else:
+        print(f"Directory already exists: {save_path}")
+    plt.savefig(save_path + title+".png")
+    # plt.show()
+    plt.close()
+        
+        
+def eval_summary(ori_matrix, marked_regions):
+    data = {
+        'index_x': [],
+        'index_y': [],
+        'eval_value': [],
+        'max': [],
+        'min': [],
+        'Quantile_85': [],
+        'Quantile_15': [],
+        'avg': []
+        
+    }
+
+    df = pd.DataFrame(data)
+    avg = np.nanmean(ori_matrix)
+    q15 = np.nanpercentile(ori_matrix, 15)
+    q85 = np.nanpercentile(ori_matrix, 85)
+    eval_value = (q85-q15)/avg
+    max_val = np.nanmax(ori_matrix)
+    min_val =np.nanmin(ori_matrix)
+    
+    new_row = {
+        'index_x': 'ori',
+        'index_y': 'ori',
+        'eval_value': eval_value,
+        'max': max_val,
+        'min': min_val,
+        'Quantile_85': q85,
+        'Quantile_15': q15,
+        'avg': avg
+    }
+    df.loc[len(df)] = new_row
+
+
+    
+    for i in marked_regions:
+        start_x, start_y = i[0], i[1]
+        tmp_matrix = ori_matrix[start_y:start_y+small_rows, start_x:start_x+small_cols]
+        
+        avg = np.nanmean(tmp_matrix)
+        q15 = np.nanpercentile(tmp_matrix, 15)
+        q85 = np.nanpercentile(tmp_matrix, 85)
+        eval_value = (q85-q15)/avg
+        max_val = np.nanmax(tmp_matrix)
+        min_val =np.nanmin(tmp_matrix)
+
+        new_row = {
+            'index_x': start_x,
+            'index_y': start_y,
+            'eval_value': eval_value,
+            'max': max_val,
+            'min': min_val,
+            'Quantile_85': q85,
+            'Quantile_15': q15,
+            'avg': avg
+        }
+        df.loc[len(df)] = new_row
+    save_path = r"D:\\vscode\\python_code\\\UPL_PL\\UJ4300621UPL_0.1_85\\"
+    df.to_csv(save_path +"eval.csv", index=False)
+
+
+
+df = pd.read_csv('UJ4300621UPL_MODIFY_PL.csv')
+df = df.drop(columns=['Unnamed: 0'])
+big_matrix  = np.array(df)
+
+
+ori_matrix = big_matrix.copy()
+mark_regions_plt(big_matrix, 0, 0, [], '{}'.format('ori'))
+# raise ValueError
+
+# 計算15分位和85分位的值
+# q15 = np.nanpercentile(big_matrix, 15)
+q85 = np.nanpercentile(big_matrix, 85)
+# 將小於15分位和大於85分位的值替換為2500
+# big_matrix[(big_matrix < q15) | (big_matrix > q85)] = -1
+big_matrix[(big_matrix > q85)] = -1
+# 將nan值替換為np.nan
+big_matrix[np.isnan(big_matrix)] = -2
+small_cols = 1104
+small_rows = 120
+threshold = 0.4
+marked_regions = []
+
+
+
+marked_regions = scan_regions(big_matrix , small_cols, small_rows, marked_regions, threshold)
+mark_regions_plt(ori_matrix, small_rows, small_cols, marked_regions, '{}'.format('final_ori'))
+eval_summary(ori_matrix, marked_regions)
