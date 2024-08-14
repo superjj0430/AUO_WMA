@@ -1,0 +1,346 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import os
+
+def get_block_dict(big_matrix, small_matrix_y, small_matrix_x):
+    block_dict = {}
+    big_rows, big_cols = big_matrix.shape
+    small_rows, small_cols = small_matrix_y, small_matrix_x
+    start_x = 0
+    start_y = 0
+    while start_y < big_rows:
+        block = big_matrix[start_y:start_y+small_rows, start_x:start_x+small_cols]
+        if np.sum(block) != 0:
+            block_dict['{}_{}'.format(start_y, start_x)] = block.copy()
+        if (start_x + small_cols) >= big_cols:
+            start_x=0
+            start_y+=small_rows
+        
+        else:   
+            start_x+=small_cols
+
+    return block_dict
+
+
+def mark_regions_plt(big_matrix, small_matrix_y, small_matrix_x, marked_regions, title):
+    fig, ax = plt.subplots()
+    ax.imshow(big_matrix, cmap='gray_r', vmin=0, vmax=1)
+
+    # for region in marked_regions:
+    #     i, j = region
+    #     small_rows, small_cols = small_matrix_y, small_matrix_x
+    #     rect = patches.Rectangle((j, i), small_cols, small_rows, linewidth=2, edgecolor='red', facecolor='none')
+    #     ax.add_patch(rect)
+    
+    for key, value in marked_regions.items():
+        i, j  = int(key.split('_')[0]), int(key.split('_')[1])
+        small_rows, small_cols = small_matrix_y, small_matrix_x
+        rect = patches.Rectangle((j, i), small_cols, small_rows, linewidth=2, edgecolor='red', facecolor='none')
+        ax.add_patch(rect)
+        
+    plt.title(title)
+    # plt.show()
+    plt.savefig(save_path + title+".png")
+    plt.close()
+
+
+def show_image(matrix, title):
+
+    plt.imshow(matrix, cmap='gray_r', vmin=0, vmax=1)
+    plt.title(title)
+    # plt.show()
+    plt.savefig(save_path + title+".png")
+    plt.close()
+
+
+def replace_ones_with_zeros_small(matrix1, matrix2):
+    rows, cols = matrix1.shape
+    for i in range(rows):
+        for j in range(cols):
+            if matrix1[i, j] == 1 and matrix2[i, j] == 1:
+                matrix1[i, j] = 0
+                matrix2[i, j] = 3
+
+                
+    return matrix1, matrix2
+
+
+def replace_block_ones_with_zeros_big(big_matrix, small_matrix, start_row, start_col):
+    small_rows, small_cols = small_matrix.shape
+    for i in range(small_rows):
+        for j in range(small_cols):
+            if small_matrix[i, j] == 1 and big_matrix[start_row + i, start_col + j] == 1:
+                big_matrix[start_row + i, start_col + j] = 0
+
+    return big_matrix
+
+
+def find_best_mapping(block_dict, small_matrix):
+    small_rows, small_cols = small_matrix.shape
+    max_mapping = 0
+    max_mapping_area = ''
+    max_lost = 0
+    
+    for key, value in block_dict.items():
+        if np.sum(value) == 0:
+            return ['area no defect!', key]
+        
+        lost_defect = 0
+        mapping_defect = 0
+        for m in range(small_rows):
+            for n in range(small_cols):
+                if value[m, n] == 1:
+                    if small_matrix[m, n]==0:
+                        lost_defect +=1
+                    
+                    if small_matrix[m, n] ==1:
+                        mapping_defect +=1
+          
+        if lost_defect/(mapping_defect+lost_defect) > stamp_change_ratio:
+            continue
+        
+        elif mapping_defect>max_mapping:
+            max_mapping = mapping_defect
+            max_mapping_area = key
+            max_lost = lost_defect
+    
+    
+    if max_mapping_area != '':
+        return [max_mapping_area, max_mapping, max_lost]
+    else:
+        return ['change stamp!']
+            
+
+def reverse_mapping(used_block_dict, small_matrix):
+    small_rows, small_cols = small_matrix.shape
+    max_mapping = 0
+    max_mapping_area = ''
+    max_lost = 0
+    for key, value in used_block_dict.items():
+        lost_defect = 0
+        mapping_defect = 0
+        break_outer_loop = False
+        for m in range(small_rows):
+            for n in range(small_cols):
+                
+                if value[m, n] == 3: 
+                    if small_matrix[m, n] ==1:
+                        break_outer_loop = True
+                        break 
+                
+                elif value[m, n] == 1:
+                    if small_matrix[m, n]==0:
+                        lost_defect +=1
+                    
+                    if small_matrix[m, n] ==1:
+                        mapping_defect +=1
+                        
+            if break_outer_loop:
+                # 跳出到最外層迴圈
+                break
+        if break_outer_loop:
+            # 跳出到最外層迴圈
+            break
+        if lost_defect/(mapping_defect+lost_defect) > stamp_change_ratio:
+            small_matrix = np.ones((small_matrix_y2, small_matrix_x2))
+        max_mapping = mapping_defect
+        max_mapping_area = key
+        max_lost = lost_defect
+        
+    if max_mapping_area != '' and mapping_defect != 0:
+        print('reverse find!!')
+        print([max_mapping_area, max_mapping, max_lost])
+        return [max_mapping_area, max_mapping, max_lost], small_matrix
+    else:
+        # print('not found')
+        return ['not found!'], small_matrix
+        
+                        
+
+if __name__ == "__main__":
+    
+    demo_cnt = 0.011
+    while demo_cnt <= 0.019:
+        print('demo_cnt: ', demo_cnt)
+        demo_cnt = round(demo_cnt, 3)
+        global save_path, small_matrix_y, small_matrix_x, stamp_change_ratio
+        small_matrix_y, small_matrix_x = 72, 80
+        
+        small_matrix_y2, small_matrix_x2 = 18, 20
+        
+        small_matrix = np.ones((small_matrix_y, small_matrix_x))
+        
+        small_matrix2 = np.ones((small_matrix_y2, small_matrix_x2))
+        stamp_change_ratio = demo_cnt
+        
+        
+        save_path = "D:\\vscode\\python_code\\SLB_opt_double_{}\\".format(demo_cnt)
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+            print(f"Created directory: {save_path}")
+        else:
+            print(f"Directory already exists: {save_path}")
+        
+        # 示例用法
+        shot_cnt = 0
+        # np.random.seed(123)
+        # big_matrix = np.random.randint(0, 100, size=(1080, 640)) # 生成数值在0到99之间的矩阵
+        # # big_matrix = np.random.randint(0, 100, size=(100, 100))
+        # indices = np.random.choice(big_matrix.size, size=int(0.02 * big_matrix.size), replace=False)
+        # big_matrix.flat[indices] = 1
+        # big_matrix[big_matrix != 1] = 0
+        
+        # big_matrix_df = pd.read_csv('UMAOI100_Test_202407031525_LUM_MES.csv')
+        # big_matrix = big_matrix_df.to_numpy()
+        column_spec = pd.read_csv('product_type.csv')   
+        big_matrix_df = pd.read_csv('UMAOI100_Test_202407031525_LUM_MES.csv' , skiprows=9, names=column_spec[~column_spec['LUM_EDC'].isna()]['LUM_EDC'].tolist())
+
+        big_matrix = np.zeros((1080, 640))
+
+        tmp_df = big_matrix_df[(big_matrix_df['LED_TYPE'] == 'R')]
+        print(tmp_df.shape)
+        cnt = 0
+        # 从DataFrame中读取索引并填充为1
+        for i, row in tmp_df.iterrows():
+            index_i = row['LED_Index_I']-1
+            index_j = row['LED_Index_J']-1
+            if index_i <= 640 and index_j <= 1080:
+                big_matrix[index_j, index_i] = 1
+
+        
+        show_image(small_matrix, "initial Small Matrix")  
+        show_image(big_matrix, "initial Big Matrix_{}".format(shot_cnt))
+        start_num_zeros = np.sum(big_matrix == 0)
+        start_num_ones = np.sum(big_matrix == 1)
+        print('initial big_matrix one cnt: {}', start_num_ones)
+        print('initial big_matrix zero cnt: {}', start_num_zeros)
+        print('initial big_matrix one ratio: {}', start_num_ones/(start_num_ones+start_num_zeros))
+        
+
+
+        
+
+
+        data = {
+            'iter': [],
+            'refill': [],
+            'index_x': [],
+            'index_y': [],
+            'stamp_left': [],
+            'mapping_defect': [],
+            'not_mapping_defect': [],
+            'reverse':[]
+        }
+
+        df = pd.DataFrame(data)
+
+
+
+        
+        # 全範圍覆蓋
+        block_dict = get_block_dict(big_matrix=big_matrix, small_matrix_y=small_matrix_y, 
+                                        small_matrix_x=small_matrix_x)
+        
+        # mark_regions_plt(big_matrix, small_matrix_y, small_matrix_x, block_dict, 'sep_test')
+        
+        # find best mapping
+        iter_cnt = 0
+        refill_cnt = 0
+        used_block_dict = {}
+        while len(block_dict) != 0:
+            print('iter_cnt: {}, refill_cnt: {}'.format(iter_cnt, refill_cnt))
+            
+            result = find_best_mapping(block_dict, small_matrix)
+            
+            if result[0] == 'change stamp!':
+                reverse_mapping_flag = True
+                while reverse_mapping_flag:
+                    reverse_result, small_matrix2 = reverse_mapping(used_block_dict, small_matrix2)
+                    if reverse_result[0] != 'not found!':
+                        start_x = int(reverse_result[0].split('_')[1])
+                        start_y = int(reverse_result[0].split('_')[0])
+                        new_row = {
+                            'iter': iter_cnt,
+                            'refill': refill_cnt,
+                            'index_x': start_x,
+                            'index_y': start_y,
+                            'stamp_left': stamp_left,
+                            'mapping_defect': reverse_result[1],
+                            'not_mapping_defect': reverse_result[2],
+                            'reverse' : 'True',
+                        }
+                        df.loc[len(df)] = new_row
+                        big_matrix = replace_block_ones_with_zeros_big(big_matrix, small_matrix, 
+                                                                    start_y, start_x)
+                        small_matrix, used_matrix = replace_ones_with_zeros_small(small_matrix, used_block_dict[reverse_result[0]])
+                        used_block_dict[reverse_result[0]] = used_matrix  
+                    else:
+                        reverse_mapping_flag = False
+                    
+                
+                stamp_left = np.sum(small_matrix == 1)
+                small_matrix = np.ones((small_matrix_y, small_matrix_x))
+                refill_cnt+=1
+                new_row = {
+                    'iter': iter_cnt,
+                    'refill': refill_cnt,
+                    'index_x': None,
+                    'index_y': None,
+                    'stamp_left': stamp_left,
+                    'mapping_defect': 0,
+                    'not_mapping_defect': 0,
+                    'reverse' : 'False',
+                }
+                df.loc[len(df)] = new_row
+                
+                
+            
+            elif result[0] == "area no defect!":
+                del block_dict[result[1]]
+                
+            else:
+                start_x = int(result[0].split('_')[1])
+                start_y = int(result[0].split('_')[0])
+                stamp_left = 0
+                new_row = {
+                    'iter': iter_cnt,
+                    'refill': refill_cnt,
+                    'index_x': start_x,
+                    'index_y': start_y,
+                    'stamp_left': stamp_left,
+                    'mapping_defect': result[1],
+                    'not_mapping_defect': result[2],
+                    'reverse' : 'False',
+                }
+                df.loc[len(df)] = new_row
+                
+                big_matrix = replace_block_ones_with_zeros_big(big_matrix, small_matrix, 
+                                                            start_y, start_x)            
+                # show_image(small_matrix, "ori Small Matrix")
+                small_matrix, used_matrix = replace_ones_with_zeros_small(small_matrix, block_dict[result[0]])
+                # show_image(small_matrix, "new Small Matrix")
+
+                used_block_dict[result[0]] = used_matrix
+                # mark_regions_plt(big_matrix, small_matrix_y, small_matrix_x, tmp_dict, "{}_{}_{}_mark_regions".format(shot_cnt, refill_cnt, iter_cnt))
+                
+                del block_dict[result[0]]
+            
+                iter_cnt+=1
+
+        mark_regions_plt(big_matrix, small_matrix_y, small_matrix_x, used_block_dict, "{}_{}_{}_mark_regions".format(shot_cnt, refill_cnt, iter_cnt))
+        show_image(big_matrix, "final Big Matrix_{}".format(shot_cnt))
+        end_num_zeros = np.sum(big_matrix == 0)
+        end_num_ones = np.sum(big_matrix == 1)
+        print('end big_matrix one cnt: {}', end_num_ones)
+        print('end big_matrix zero cnt: {}', end_num_zeros)
+        print('end big_matrix one ratio: {}', end_num_ones/(end_num_ones+end_num_zeros))
+        
+        df['start_defect_cnt'] = start_num_ones
+        df['start_defect_ratio'] = start_num_ones/(start_num_ones+start_num_zeros)
+        df['end_defect_cnt'] = end_num_ones
+        df['end_defect_ratio'] = end_num_ones/(end_num_ones+end_num_zeros)
+        df.to_csv(save_path+'status.csv', index=False)
+        
+        demo_cnt+=0.001
